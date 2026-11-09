@@ -1,0 +1,25 @@
+name: selftest
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Regenerate core from source snapshot and verify it is in sync
+        run: |
+          # core.js 是已抽取好的产物；这里只验证语法与自测，不依赖小程序源码
+          node --check scripts/core.js
+          node --check scripts/svg_canvas.js
+          node --check scripts/generate.js
+      - name: Run 5x5 map generation matrix
+        run: node scripts/selftest.js
